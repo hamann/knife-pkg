@@ -1,4 +1,5 @@
 require "knife-pkg/version"
+require "knife-pkg/package"
 
 module Knife
   module Pkg
