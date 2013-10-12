@@ -1,5 +1,3 @@
-require 'chef/knife/pkg_base'
-
 class Chef
   class Knife
     class PkgList < Knife
@@ -8,7 +6,7 @@ class Chef
       banner 'knife pkg list (options)'
 
       def run
-        puts 'hello pkg!'
+        puts Chef::Config[:knife]
       end
     end
   end

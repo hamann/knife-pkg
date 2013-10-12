@@ -1,4 +1,5 @@
 require 'knife-pkg'
+require 'knife-pkg/controllers/debian'
 
 include Knife::Pkg
 

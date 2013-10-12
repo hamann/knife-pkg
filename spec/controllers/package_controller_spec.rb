@@ -17,4 +17,12 @@ describe 'PackageController' do
       expect(p.sudo).to eq("")
     end
   end
+
+  describe '.init_controller' do
+    it 'should initialize the right package controller' do
+      FakeNode = Struct.new(:platform)
+      node = FakeNode.new("debian")
+      PackageController.init_controller(node, nil)
+    end
+  end
 end
