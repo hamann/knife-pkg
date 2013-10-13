@@ -39,17 +39,30 @@ module Knife
         raise NotImplementedError
       end
 
-      # updates an array of packages
+      # updates a package
       # should only execute a 'dry-run' if @options[:dry_run] is set
-      # should be verbose if opts[:verbose] and/or @options[:dry_run] is set
-      def update!(packages)
+      # returns a ShellCommandResult
+      def update_package!(package)
         raise NotImplementedError
       end
 
-      def self.update!(node, session, packages)
+      def self.update!(node, session, packages, opts)
+        ctrl = self.init_controller(node, session, opts)
+        packages.each do |pkg|
+          result = ctrl.update_package!(package)
+          if @options[:dry_run] || @options[:verbose]
+            p result.stdout # TODO ui
+            p result.stderr # TODO ui
+          end
+        end
       end
 
-      def self.show!(node, session, packages)
+      def self.available_updates(node, session, opts)
+        ctrl = self.init_controller(node, session, opts)
+        updates = ctrl.available_updates
+        updates.each do |update|
+          p update # TODO ui
+        end
       end
 
       def self.init_controller(node, session, opts)

@@ -36,6 +36,12 @@ module Knife
         packages
       end
 
+      def update_package!(package)
+        cmd_string = "#{sudo} DEBIAN_FRONTEND=noninteractive apt-get install #{package} -y -o Dpkg::Options::='--force-confold'"
+        cmd_string += " -s" if @options[:dry_run]
+        ShellCommand.exec(cmd_string, @session)
+      end
+
       def update_notifier_installed?
           ShellCommand.exec("dpkg-query -W update-notifier-common 2>/dev/null || echo 'false'").stdout.chomp != 'false'
       end
