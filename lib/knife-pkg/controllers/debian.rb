@@ -18,7 +18,7 @@ module Knife
       end
 
       def installed_version(package)
-        ShellCommand.exec("dpkg -p #{package.name} | grep -i Version: | awk '{print $2}'").stdout.chomp
+        ShellCommand.exec("dpkg -p #{package.name} | grep -i Version: | awk '{print $2}'", @session).stdout.chomp
       end
 
       def available_updates
@@ -43,7 +43,7 @@ module Knife
       end
 
       def update_notifier_installed?
-          ShellCommand.exec("dpkg-query -W update-notifier-common 2>/dev/null || echo 'false'").stdout.chomp != 'false'
+          ShellCommand.exec("dpkg-query -W update-notifier-common 2>/dev/null || echo 'false'", @session).stdout.chomp != 'false'
       end
     end
   end

@@ -1,54 +1,37 @@
 class Chef
   class Knife
-    module PkgBase
+    class PkgBase < Knife::Ssh
 
-      def self.load_deps
-        require 'knife-pkg'
+      def run
+        @longest = 0
+        configure_attribute
+        configure_user
+        configure_identity_file
+        configure_gateway
+        configure_session
+        process_each_node
       end
 
-      def self.included(includer)
-        includer.class_eval do
-          category 'pkg'
+    end
 
-          deps { Chef::Knife::PkgBase.load_deps }
-
-          option :ssh_user,
-            :short => '-x USERNAME',
-            :long => '--ssh-user USERNAME',
-            :description => 'The ssh username',
-            :proc => Proc.new { |api_key| Chef::Config[:knife][:ssh_user] = api_key }
-
-          option :ssh_port,
-            :short => "-p PORT",
-            :long => "--ssh-port PORT",
-            :description => "The ssh port",
-            :default => "22",
-            :proc => Proc.new { |key| Chef::Config[:knife][:ssh_port] = key }
-
-          option :identity_file,
-            :short => "-i IDENTITY_FILE",
-            :long => "--identity-file IDENTITY_FILE",
-            :description => "The SSH identity file used for authentication"
-
-          option :no_host_key_verify,
-            :long => "--no-host-key-verify",
-            :description => "Disable host key verification",
-            :boolean => true,
-            :default => false
-
-          option :attribute,
-            :short => "-a ATTR",
-            :long => "--attribute ATTR",
-            :description => "The attribute to use for opening the ssh connection - default is fqdn",
-            :default => "fqdn"
-
-        end
+    def process_each_node
+      @action_nodes.each do |node|
+        host_spec = host_spec_by_node(node)
+        subsession = session.on(host_spec)
+        process(node, session)
       end
+    end
 
-      def locate_config_value(key)
-        key = key.to_sym
-        config[key] || Chef::Config[:knife][key]
+    def host_spec_by_node(node)
+      if !config[:override_attribute] && node[:cloud] and node[:cloud][:public_hostname]
+        i = node[:cloud][:public_hostname]
+      elsif config[:override_attribute]
+        i = extract_nested_value(node, config[:override_attribute])
+      else
+        i = extract_nested_value(node, config[:attribute])
       end
+      user = config[:ssh_user] || ssh_config[:user]
+      hostspec = user ? "#{user}@#{i}" : node
     end
   end
 end

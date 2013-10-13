@@ -1,12 +1,57 @@
 class Chef
   class Knife
-    class PkgUpdatesShow < Knife
-      include Knife::PkgBase
+    class PkgUpdatesShow < PkgBase
 
       banner 'knife pkg updates show QUERY (options)'
 
+      deps do
+        require 'net/ssh'
+        require 'net/ssh/multi'
+        require 'chef/knife/ssh'
+        require 'knife-pkg'
+      end
+
+      option :ssh_user,
+        :short => '-x USERNAME',
+        :long => '--ssh-user USERNAME',
+        :description => 'The ssh username'
+
+      option :ssh_port,
+        :short => "-p PORT",
+        :long => "--ssh-port PORT",
+        :description => "The ssh port",
+        :default => "22",
+        :proc => Proc.new { |key| Chef::Config[:knife][:ssh_port] = key }
+
+      option :identity_file,
+        :short => "-i IDENTITY_FILE",
+        :long => "--identity-file IDENTITY_FILE",
+        :description => "The SSH identity file used for authentication"
+
+      option :no_host_key_verify,
+        :long => "--no-host-key-verify",
+        :description => "Disable host key verification",
+        :boolean => true,
+        :default => false
+
+      option :attribute,
+        :short => "-a ATTR",
+        :long => "--attribute ATTR",
+        :description => "The attribute to use for opening the ssh connection - default is fqdn"
+
+      option :manual,
+        :short => "-m",
+        :long => "--manual-list",
+        :boolean => true,
+        :description => "QUERY is a space separated list of servers",
+        :default => false
+
       def run
-        puts Chef::Config[:knife]
+        super
+      end
+      
+      def process(node, session)
+        ::Knife::Pkg::PackageController.available_updates(node, session, :sudo => true) # TODO apply sudo by configuriation
       end
     end
   end

@@ -31,7 +31,7 @@ module Knife
 
         result = ShellCommandResult.new(cmd, stdout_data, stderr_data, exit_code.to_i)
 
-        raise_error! unless result.succeded?
+        raise_error!(result) unless result.succeeded?
 
         return result
       end

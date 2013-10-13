@@ -57,7 +57,7 @@ module Knife
         end
       end
 
-      def self.available_updates(node, session, opts)
+      def self.available_updates(node, session, opts = {})
         ctrl = self.init_controller(node, session, opts)
         updates = ctrl.available_updates
         updates.each do |update|
@@ -72,7 +72,7 @@ module Knife
         rescue LoadError
           raise NotImplementedError, "I'm sorry, but #{node.platform} is not supported!"
         end
-        Object.const_get("#{ctrl_name.capitalize}PackageController").new(node, session, opts)
+        Object.const_get('Knife').const_get('Pkg').const_get("#{ctrl_name.capitalize}PackageController").new(node, session, opts)
       end
 
       def self.controller_name(platform)
