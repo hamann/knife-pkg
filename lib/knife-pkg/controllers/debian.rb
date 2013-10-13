@@ -4,8 +4,8 @@ module Knife
   module Pkg
     class DebianPackageController < PackageController
 
-      def initialize(session, opts = {})
-        super(session, opts)
+      def initialize(node, session, opts = {})
+        super(node, session, opts)
       end
 
       def update_pkg_cache

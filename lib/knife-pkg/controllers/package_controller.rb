@@ -4,10 +4,12 @@ module Knife
   module Pkg
     class PackageController
 
+      attr_accessor :node
       attr_accessor :session
       attr_accessor :options
 
-      def initialize(session, opts = {})
+      def initialize(node, session, opts = {})
+        @node = node
         @session = session
         @options = opts
       end
@@ -50,14 +52,14 @@ module Knife
       def self.show!(node, session, packages)
       end
 
-      def self.init_controller(node, session)
+      def self.init_controller(node, session, opts)
         begin
           ctrl_name = self.controller_name(node.platform)
           require File.join(File.dirname(__FILE__), ctrl_name)
         rescue LoadError
           raise NotImplementedError, "I'm sorry, but #{node.platform} is not supported!"
         end
-        Object.const_get("#{ctrl_name.capitalize}PackageController").new(node, session)
+        Object.const_get("#{ctrl_name.capitalize}PackageController").new(node, session, opts)
       end
 
       def self.controller_name(platform)

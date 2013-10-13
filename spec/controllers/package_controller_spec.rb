@@ -8,12 +8,12 @@ describe 'PackageController' do
 
   describe '#sudo' do
     it 'should return sudo prefix' do
-      p = PackageController.new(nil, :sudo => true)
+      p = PackageController.new(nil, nil, :sudo => true)
       expect(p.sudo).to eq("sudo ")
     end
 
     it 'should return no sudo prefix' do
-      p = PackageController.new(nil)
+      p = PackageController.new(nil, nil)
       expect(p.sudo).to eq("")
     end
   end
@@ -22,7 +22,7 @@ describe 'PackageController' do
     it 'should initialize the right package controller' do
       FakeNode = Struct.new(:platform)
       node = FakeNode.new("debian")
-      PackageController.init_controller(node, nil)
+      PackageController.init_controller(node, nil, nil)
     end
   end
 end
