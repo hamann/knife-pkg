@@ -52,12 +52,12 @@ module Knife
 
       def self.init_controller(node, session)
         begin
-          ctrl_name = self.controller_name(node.platform).capitalize
-          require File.expand_path(File.dirname(__FILE__) + "/#{ctrl_name}.rb")
+          ctrl_name = self.controller_name(node.platform)
+          require File.join(File.dirname(__FILE__), ctrl_name)
         rescue LoadError
           raise NotImplementedError, "I'm sorry, but #{node.platform} is not supported!"
         end
-        Object.const_get("#{ctrl_name}PackageController").new(node, session)
+        Object.const_get("#{ctrl_name.capitalize}PackageController").new(node, session)
       end
 
       def self.controller_name(platform)
