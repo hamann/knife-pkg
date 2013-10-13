@@ -55,7 +55,7 @@ module Knife
           ctrl_name = self.controller_name(node.platform).capitalize
           require File.expand_path(File.dirname(__FILE__) + "/#{ctrl_name}.rb")
         rescue LoadError
-          raise NotImplementedError "I'm sorry, but #{node.platform} is not supported!"
+          raise NotImplementedError, "I'm sorry, but #{node.platform} is not supported!"
         end
         Object.const_get("#{ctrl_name}PackageController").new(node, session)
       end
