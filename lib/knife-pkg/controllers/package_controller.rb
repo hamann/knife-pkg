@@ -24,23 +24,25 @@ module Knife
         @options[:sudo] ? 'sudo ' : ''
       end
 
+      ## ++ methods to implement
+      
       # update the package cache 
       # e.g apt-get update
       def update_pkg_cache
         raise NotImplementedError
       end
 
-      # returns the time of the last package cache update
+      # returns the `Time` of the last package cache update
       def last_pkg_cache_update
         raise NotImplementedError
       end
 
-      # returns the version of the installed package
+      # returns the version string of the installed package
       def installed_version(package)
         raise NotImplementedError
       end
 
-      # returns an array of all available updates
+      # returns an `Array` of all available updates
       def available_updates
         raise NotImplementedError
       end
@@ -52,29 +54,83 @@ module Knife
         raise NotImplementedError
       end
 
-      def self.update!(node, session, packages, opts)
-        ctrl = self.init_controller(node, session, opts)
-        packages.each do |pkg|
-          result = ctrl.update_package!(package)
-          if @options[:dry_run] || @options[:verbose]
-            ui.info(result.stdout)
-            ui.error(result.stderr)
+      ## ++ methods to implement
+
+      def try_update_pkg_cache
+        if Time.now - last_pkg_cache_update > 86400 # 24 hours
+          @ui.info("Updating package cache...")
+          update_pkg_cache
+        end
+      end
+
+      def update_dialog(packages)
+        return if packages == 0
+
+        ui.info("\tThe following updates are available:") if packages.count > 0
+        packages.each do |package|
+          ui.info(ui.color("\t" + package.to_s, :yellow))
+        end
+
+        if UserDecision.yes?("\tShould I update all packages? [y|n]: ")
+          ui.info("\tUpdating...")
+          packages.each do |p| 
+            update_package!(p) 
+            if @options[:dry_run] || @options[:verbose]
+                ui.info(result.stdout)
+                ui.error(result.stderr)
+            end
+          end
+          ui.info("\tall packages updated!")
+        else
+          packages.each do |package|
+            if UserDecision.yes?("\tShould I update #{package}? [y|n]: ")
+              result = update_package!(package)
+              ui.info("\t#{package} updated!")
+              if @options[:dry_run] || @options[:verbose]
+                ui.info(result.stdout)
+                ui.error(result.stderr)
+              end
+            end
           end
         end
       end
 
-      def self.available_updates(node, session, opts = {})
-        ctrl = self.init_controller(node, session, opts)
-
-        if Time.now - ctrl.last_pkg_cache_update > 86400 # 24 hours
-          ui.info("Updating package cache...")
-          ctrl.update_pkg_cache
-        end
-
-        updates = ctrl.available_updates
+      def self.list_available_updates(updates)
         updates.each do |update|
           ui.info(ui.color("\t" + update.to_s, :yellow))
         end
+      end
+
+      def self.update!(node, session, packages, opts)
+        ctrl = self.init_controller(node, session, opts)
+
+        auto_updates = packages.map { |u| Package.new(u) }
+        updates_for_dialog = Array.new
+
+        ctrl.try_update_pkg_cache
+        available_updates = ctrl.available_updates
+
+        available_updates.each do |avail|
+          if auto_updates.select { |p| p.name == avail.name }.count == 0
+            updates_for_dialog << avail
+          else
+            ui.info("\tUpdating #{avail.to_s}")
+            result = ctrl.update_package!(avail)
+            if opts[:dry_run] || opts[:verbose]
+              ui.info(result.stdout)
+              ui.error(result.stderr)
+            end
+          end
+        end
+
+        ctrl.update_dialog(updates_for_dialog)
+      end
+
+      def self.available_updates(node, session, opts = {})
+        ctrl = self.init_controller(node, session, opts)
+        ctrl.try_update_pkg_cache
+        updates = ctrl.available_updates
+        list_available_updates(updates)
       end
 
       def self.init_controller(node, session, opts)
@@ -84,7 +140,9 @@ module Knife
         rescue LoadError
           raise NotImplementedError, "I'm sorry, but #{node.platform} is not supported!"
         end
-        Object.const_get('Knife').const_get('Pkg').const_get("#{ctrl_name.capitalize}PackageController").new(node, session, opts)
+        ctrl = Object.const_get('Knife').const_get('Pkg').const_get("#{ctrl_name.capitalize}PackageController").new(node, session, opts)
+        ctrl.ui = self.ui
+        ctrl
       end
 
       def self.controller_name(platform)
