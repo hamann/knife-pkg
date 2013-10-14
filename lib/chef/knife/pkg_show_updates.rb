@@ -17,13 +17,6 @@ class Chef
         :description => "The attribute to use for opening the connection - default depends on the context",
         :proc => Proc.new { |key| Chef::Config[:knife][:ssh_attribute] = key.strip }
 
-      option :manual,
-        :short => "-m",
-        :long => "--manual-list",
-        :boolean => true,
-        :description => "QUERY is a space separated list of servers",
-        :default => false
-
       option :ssh_user,
         :short => "-x USERNAME",
         :long => "--ssh-user USERNAME",
@@ -69,6 +62,14 @@ class Chef
         :description => "Use sudo",
         :boolean => true,
         :default => false
+
+      option :pkg_verbose,
+        :short => "-l",
+        :long => "--pkg-verbose",
+        :description => "More verbose output for package related things",
+        :boolean => true,
+        :default => false
+
       
       def run
         super

@@ -3,7 +3,10 @@ class Chef
     class PkgBase < Knife::Ssh
 
       def run
+        # necessary for Knife::Ssh
         @longest = 0
+        config[:manual] = false 
+
         configure_attribute
         configure_sudo
         configure_user
@@ -23,6 +26,7 @@ class Chef
     def pkg_options
       pkg_options = Hash.new
       pkg_options[:sudo] = config[:sudo_required]
+      pkg_options[:verbose] = config[:verbose] || config[:dry_run] || config[:pkg_verbose]
       pkg_options
     end
 
