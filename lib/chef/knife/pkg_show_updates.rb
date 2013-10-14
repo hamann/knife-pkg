@@ -62,6 +62,13 @@ class Chef
         :description => "Verify host key, enabled by default.",
         :boolean => true,
         :default => true
+
+      option :sudo_required,
+        :short => "-z",
+        :long => "--sudo-required",
+        :description => "Use sudo",
+        :boolean => true,
+        :default => false
       
       def run
         super
@@ -69,7 +76,7 @@ class Chef
       
       def process(node, session)
         ui.info("===> " + extract_nested_value(node, config[:attribute]))
-        ::Knife::Pkg::PackageController.available_updates(node, session, :sudo => true) # TODO apply sudo by configuriation
+        ::Knife::Pkg::PackageController.available_updates(node, session, pkg_options)
       end
     end
   end

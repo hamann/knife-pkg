@@ -5,6 +5,7 @@ class Chef
       def run
         @longest = 0
         configure_attribute
+        configure_sudo
         configure_user
         configure_identity_file
         configure_gateway
@@ -12,6 +13,17 @@ class Chef
         process_each_node
       end
 
+    end
+
+    def configure_sudo
+      config[:sudo_required] = Chef::Config[:knife][:pkg_sudo_required] ||
+                       config[:sudo_required]
+    end
+
+    def pkg_options
+      pkg_options = Hash.new
+      pkg_options[:sudo] = config[:sudo_required]
+      pkg_options
     end
 
     def process_each_node
