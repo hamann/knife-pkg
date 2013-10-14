@@ -27,14 +27,38 @@ class Chef
     end
 
     def process_each_node
-      @action_nodes.each do |node|
-        host_spec = host_spec_by_node(node)
-        subsession = session.on(host_spec)
-        process(node, session)
+      cur_session = nil
+      begin
+        session.servers.each do |server|
+          node = node_by_hostname(server.host)
+          if node
+            cur_session = server.session(true)
+            process(node, cur_session)
+            cur_session.close
+          else
+            ui.fatal("Could not find any node for server #{server.host}")
+            exit 1
+          end
+        end
+      ensure
+        if cur_session
+          cur_session.close unless cur_session.closed?
+        end
       end
     end
 
-    def host_spec_by_node(node)
+    def node_by_hostname(hostname)
+      node = nil
+      @action_nodes.each do |n|
+        if hostname_by_attribute(n) == hostname
+          node = n
+          break
+        end
+      end
+      node
+    end
+
+    def hostname_by_attribute(node)
       if !config[:override_attribute] && node[:cloud] and node[:cloud][:public_hostname]
         i = node[:cloud][:public_hostname]
       elsif config[:override_attribute]
@@ -42,8 +66,6 @@ class Chef
       else
         i = extract_nested_value(node, config[:attribute])
       end
-      user = config[:ssh_user] || ssh_config[:user]
-      hostspec = user ? "#{user}@#{i}" : node
     end
   end
 end
