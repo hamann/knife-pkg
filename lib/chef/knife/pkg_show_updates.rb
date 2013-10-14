@@ -1,8 +1,8 @@
 class Chef
   class Knife
-    class PkgUpdatesShow < PkgBase
+    class PkgShowUpdates < PkgBase
 
-      banner 'knife pkg updates show QUERY (options)'
+      banner 'knife pkg show updates QUERY (options)'
 
       deps do
         require 'net/ssh'
