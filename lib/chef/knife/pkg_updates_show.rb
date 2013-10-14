@@ -51,6 +51,7 @@ class Chef
       end
       
       def process(node, session)
+        ui.info("===> " + extract_nested_value(node, config[:attribute]))
         ::Knife::Pkg::PackageController.available_updates(node, session, :sudo => true) # TODO apply sudo by configuriation
       end
     end

@@ -1,4 +1,5 @@
 require 'knife-pkg'
+require 'chef/knife'
 
 module Knife
   module Pkg
@@ -7,11 +8,16 @@ module Knife
       attr_accessor :node
       attr_accessor :session
       attr_accessor :options
+      attr_accessor :ui
 
       def initialize(node, session, opts = {})
         @node = node
         @session = session
         @options = opts
+      end
+
+      def self.ui
+        @ui ||= Chef::Knife::UI.new(STDOUT, STDERR, STDIN, {})
       end
 
       def sudo
@@ -51,17 +57,23 @@ module Knife
         packages.each do |pkg|
           result = ctrl.update_package!(package)
           if @options[:dry_run] || @options[:verbose]
-            p result.stdout # TODO ui
-            p result.stderr # TODO ui
+            ui.info(result.stdout)
+            ui.error(result.stderr)
           end
         end
       end
 
       def self.available_updates(node, session, opts = {})
         ctrl = self.init_controller(node, session, opts)
+
+        if Time.now - ctrl.last_pkg_cache_update > 86400 # 24 hours
+          ui.info("Updating package cache...")
+          ctrl.update_pkg_cache
+        end
+
         updates = ctrl.available_updates
         updates.each do |update|
-          p update # TODO ui
+          ui.info(ui.color("\t" + update.to_s, :yellow))
         end
       end
 
