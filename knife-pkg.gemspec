@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["holger@fehu.org"]
   spec.description   = %q{A plugin for chef's knife to manage package updates}
   spec.summary       = %q{A plugin for chef's knife to manage package updates}
-  spec.homepage      = "https://github.com/hamann/knife-pa"
+  spec.homepage      = "https://github.com/hamann/knife-pkg"
   spec.license       = "Apache 2.0"
 
   spec.files         = `git ls-files`.split($/)
