@@ -55,6 +55,15 @@ module Knife
       end
 
       ## ++ methods to implement
+      
+
+      def update_package_verbose!(package)
+        result = update_package!(package)
+        if @options[:dry_run] || @options[:verbose]
+          ui.info(result.stdout)
+          ui.error(result.stderr)
+        end
+      end
 
       def try_update_pkg_cache
         if Time.now - last_pkg_cache_update > 86400 # 24 hours
@@ -64,32 +73,24 @@ module Knife
       end
 
       def update_dialog(packages)
-        return if packages == 0
+        return if packages.count == 0
 
         ui.info("\tThe following updates are available:") if packages.count > 0
         packages.each do |package|
           ui.info(ui.color("\t" + package.to_s, :yellow))
         end
 
-        if UserDecision.yes?("\tShould I update all packages? [y|n]: ")
-          ui.info("\tUpdating...")
+        if UserDecision.yes?("\tDo you want to update all packages? [y|n]: ")
+          ui.info("\tupdating...")
           packages.each do |p| 
-            update_package!(p) 
-            if @options[:dry_run] || @options[:verbose]
-                ui.info(result.stdout)
-                ui.error(result.stderr)
-            end
+            update_package_verbose!(p) 
           end
           ui.info("\tall packages updated!")
         else
           packages.each do |package|
-            if UserDecision.yes?("\tShould I update #{package}? [y|n]: ")
-              result = update_package!(package)
+            if UserDecision.yes?("\tDo you want to update #{package}? [y|n]: ")
+              result = update_package_verbose!(package)
               ui.info("\t#{package} updated!")
-              if @options[:dry_run] || @options[:verbose]
-                ui.info(result.stdout)
-                ui.error(result.stderr)
-              end
             end
           end
         end
@@ -115,11 +116,7 @@ module Knife
             updates_for_dialog << avail
           else
             ui.info("\tUpdating #{avail.to_s}")
-            result = ctrl.update_package!(avail)
-            if opts[:dry_run] || opts[:verbose]
-              ui.info(result.stdout)
-              ui.error(result.stderr)
-            end
+            ctrl.update_package_verbose!(avail)
           end
         end
 
