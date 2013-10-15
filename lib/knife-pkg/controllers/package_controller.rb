@@ -148,7 +148,12 @@ module Knife
 
       def self.init_controller(node, session, opts)
         begin
-          ctrl_name = self.controller_name(node.platform)
+          ctrl_name = ''
+          if node.respond_to?(:platform)
+            ctrl_name = self.controller_name(node.platform)
+          else
+            ctrl_name = self.platform_by_local_ohai(session, opts)
+          end
           require File.join(File.dirname(__FILE__), ctrl_name)
         rescue LoadError
           raise NotImplementedError, "I'm sorry, but #{node.platform} is not supported!"
@@ -156,6 +161,10 @@ module Knife
         ctrl = Object.const_get('Knife').const_get('Pkg').const_get("#{ctrl_name.capitalize}PackageController").new(node, session, opts)
         ctrl.ui = self.ui
         ctrl
+      end
+
+      def self.platform_by_local_ohai(session, opts)
+        ShellCommand.exec("ohai platform| grep \\\"", session).stdout.strip.gsub(/\"/,'')
       end
 
       def self.controller_name(platform)

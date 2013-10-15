@@ -93,13 +93,19 @@ class Chef
         :proc => Proc.new { |pkgs| pkgs.split(',') },
         :default => Array.new
 
+      option :manual,
+        :short => "-m",
+        :long => "--manual-list",
+        :boolean => true,
+        :description => "QUERY is a space separated list of servers",
+        :default => false
+
+
       def run
         super
       end
       
       def process(node, session)
-        ui.info("===> " + extract_nested_value(node, config[:attribute]))
-        
         ::Knife::Pkg::PackageController.update!(node, session, config[:updates], pkg_options)
       end
     end

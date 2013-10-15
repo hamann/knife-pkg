@@ -21,7 +21,6 @@ class Chef
       def run
         # necessary for Knife::Ssh
         @longest = 0
-        config[:manual] = false 
 
         configure_attribute
         configure_sudo
@@ -53,6 +52,7 @@ class Chef
           node = node_by_hostname(server.host)
           if node
             cur_session = server.session(true)
+            ui.info("===> " + hostname_by_attribute(node))
             process(node, cur_session)
             cur_session.close
           else
@@ -69,22 +69,31 @@ class Chef
 
     def node_by_hostname(hostname)
       node = nil
-      @action_nodes.each do |n|
-        if hostname_by_attribute(n) == hostname
-          node = n
-          break
+      if config[:manual]
+        obj = Struct.new(:fqdn)
+        node = obj.new(hostname)
+      else
+        @action_nodes.each do |n|
+          if hostname_by_attribute(n) == hostname
+            node = n
+            break
+          end
         end
       end
       node
     end
 
     def hostname_by_attribute(node)
-      if !config[:override_attribute] && node[:cloud] and node[:cloud][:public_hostname]
-        i = node[:cloud][:public_hostname]
-      elsif config[:override_attribute]
-        i = extract_nested_value(node, config[:override_attribute])
+      if config[:manual]
+        node[:fqdn]
       else
-        i = extract_nested_value(node, config[:attribute])
+        if !config[:override_attribute] && node[:cloud] and node[:cloud][:public_hostname]
+          i = node[:cloud][:public_hostname]
+        elsif config[:override_attribute]
+          i = extract_nested_value(node, config[:override_attribute])
+        else
+          i = extract_nested_value(node, config[:attribute])
+        end
       end
     end
   end

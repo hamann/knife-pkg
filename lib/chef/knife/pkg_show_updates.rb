@@ -86,13 +86,19 @@ class Chef
         :boolean => true,
         :default => false
 
+      option :manual,
+        :short => "-m",
+        :long => "--manual-list",
+        :boolean => true,
+        :description => "QUERY is a space separated list of servers",
+        :default => false
+
       
       def run
         super
       end
       
       def process(node, session)
-        ui.info("===> " + extract_nested_value(node, config[:attribute]))
         ::Knife::Pkg::PackageController.available_updates(node, session, pkg_options)
       end
     end
