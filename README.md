@@ -83,8 +83,10 @@ $ knife pkg install updates "roles:webserver" -U "libxml2,gpgv,gnupg"
 
 ## Requirements
 
-* Chef(-Server) or anything else which supports `search(:node, "*:*")`
 * SSH access
+* Chef(-Server) or anything else which supports `search(:node, "*:*")` (*not required when you use `-m`*)
+* when `-m` option is given, `ohai` has to be installed on the node 
+
 
 ## Installation
 
