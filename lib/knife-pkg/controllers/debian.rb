@@ -29,6 +29,8 @@ module Knife
       end
 
       def last_pkg_cache_update
+        raise_update_notifier_missing! unless update_notifier_installed?
+
         result = ShellCommand.exec("stat -c %y /var/lib/apt/periodic/update-success-stamp", @session)
         Time.parse(result.stdout.chomp)
       end
@@ -39,15 +41,12 @@ module Knife
 
       def available_updates
         packages = Array.new
-        if !update_notifier_installed?
-          raise RuntimeError, "Gna!! No update-notifier(-common) installed!? Go ahead, install it and come back!"
-        else
-          result = ShellCommand.exec("#{sudo}/usr/lib/update-notifier/apt_check.py -p", @session)
-          result.stderr.split("\n").each do |item|
-            package = Package.new(item)
-            package.version = installed_version(package)
-            packages << package
-          end
+        raise_update_notifier_missing! unless update_notifier_installed?
+        result = ShellCommand.exec("#{sudo}/usr/lib/update-notifier/apt_check.py -p", @session)
+        result.stderr.split("\n").each do |item|
+          package = Package.new(item)
+          package.version = installed_version(package)
+          packages << package
         end
         packages
       end
@@ -59,7 +58,11 @@ module Knife
       end
 
       def update_notifier_installed?
-          ShellCommand.exec("dpkg-query -W update-notifier-common 2>/dev/null || echo 'false'", @session).stdout.chomp != 'false'
+        ShellCommand.exec("dpkg-query -W update-notifier-common 2>/dev/null || echo 'false'", @session).stdout.chomp != 'false'
+      end
+
+      def raise_update_notifier_missing!
+        raise RuntimeError, "No update-notifier(-common) installed!? Install it and try again!"
       end
     end
   end
