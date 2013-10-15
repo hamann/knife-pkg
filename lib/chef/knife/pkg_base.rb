@@ -70,8 +70,8 @@ class Chef
     def node_by_hostname(hostname)
       node = nil
       if config[:manual]
-        obj = Struct.new(:fqdn)
-        node = obj.new(hostname)
+        node = Hash.new
+        node[:fqdn] = hostname
       else
         @action_nodes.each do |n|
           if hostname_by_attribute(n) == hostname

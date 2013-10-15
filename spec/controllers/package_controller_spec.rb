@@ -20,8 +20,8 @@ describe 'PackageController' do
 
   describe '.init_controller' do
     it 'should initialize the right package controller' do
-      FakeNode = Struct.new(:platform)
-      node = FakeNode.new("debian")
+      node = Hash.new
+      node[:platform] = 'debian'
       PackageController.init_controller(node, nil, nil)
     end
   end

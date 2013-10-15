@@ -150,7 +150,7 @@ module Knife
         begin
           ctrl_name = ''
           if node.has_key?(:platform)
-            ctrl_name = self.controller_name(node.platform)
+            ctrl_name = self.controller_name(node[:platform])
           else
             platform = self.platform_by_local_ohai(session, opts)
             ctrl_name = self.controller_name(platform)
