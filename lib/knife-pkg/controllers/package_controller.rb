@@ -149,10 +149,11 @@ module Knife
       def self.init_controller(node, session, opts)
         begin
           ctrl_name = ''
-          if node.respond_to?(:platform)
+          if node.has_key?(:platform)
             ctrl_name = self.controller_name(node.platform)
           else
-            ctrl_name = self.platform_by_local_ohai(session, opts)
+            platform = self.platform_by_local_ohai(session, opts)
+            ctrl_name = self.controller_name(platform)
           end
           require File.join(File.dirname(__FILE__), ctrl_name)
         rescue LoadError
