@@ -18,7 +18,7 @@ require 'knife-pkg'
 
 module Knife
   module Pkg
-    class DebianPackageController < PackageController
+    class AptPackageController < PackageController
 
       def initialize(node, session, opts = {})
         super(node, session, opts)

@@ -21,8 +21,10 @@ describe 'PackageController' do
   describe '.init_controller' do
     it 'should initialize the right package controller' do
       node = Hash.new
+
       node[:platform] = 'debian'
-      PackageController.init_controller(node, nil, nil)
+      ctrl = PackageController.init_controller(node, nil, nil)
+      expect(ctrl).to be_an_instance_of AptPackageController
     end
   end
 end

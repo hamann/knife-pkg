@@ -171,7 +171,7 @@ module Knife
       def self.controller_name(platform)
         case platform
         when 'debian', 'ubuntu'
-          'debian'
+          'apt'
         else
           platform
         end
