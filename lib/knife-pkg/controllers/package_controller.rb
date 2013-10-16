@@ -58,6 +58,11 @@ module Knife
         raise NotImplementedError
       end
 
+      # returns the version string of the available update for a package
+      def update_version(package)
+        raise NotImplementedError
+      end
+
       # returns an `Array` of all available updates
       def available_updates
         raise NotImplementedError
@@ -72,6 +77,14 @@ module Knife
 
       ## ++ methods to implement
       
+      def update_info(packages)
+        result = []
+        packages.each do |pkg|
+          installed_version = installed_version(pkg)
+          result << "#{pkg.name} (new: #{pkg.version} | installed: #{installed_version})"
+        end
+        result
+      end
 
       def update_package_verbose!(package)
         result = update_package!(package)
@@ -92,7 +105,7 @@ module Knife
         return if packages.count == 0
 
         ui.info("\tThe following updates are available:") if packages.count > 0
-        packages.each do |package|
+        update_info(packages).each do |package|
           ui.info(ui.color("\t" + package.to_s, :yellow))
         end
 
@@ -143,7 +156,7 @@ module Knife
         ctrl = self.init_controller(node, session, opts)
         ctrl.try_update_pkg_cache
         updates = ctrl.available_updates
-        list_available_updates(updates)
+        list_available_updates(ctrl.update_info(updates))
       end
 
       def self.init_controller(node, session, opts)

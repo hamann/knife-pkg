@@ -39,13 +39,17 @@ module Knife
         ShellCommand.exec("dpkg -p #{package.name} | grep -i Version: | awk '{print $2}'", @session).stdout.chomp
       end
 
+      def update_version(package)
+        ShellCommand.exec("#{sudo} apt-cache policy #{package.name} | grep Candidate | awk '{print $2}'", @session).stdout.chomp
+      end
+
       def available_updates
         packages = Array.new
         raise_update_notifier_missing! unless update_notifier_installed?
         result = ShellCommand.exec("#{sudo}/usr/lib/update-notifier/apt_check.py -p", @session)
         result.stderr.split("\n").each do |item|
           package = Package.new(item)
-          package.version = installed_version(package)
+          package.version = update_version(package)
           packages << package
         end
         packages
