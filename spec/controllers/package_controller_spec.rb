@@ -96,7 +96,7 @@ describe 'PackageController' do
     it 'should call update_pkg_cache' do
       ctrl = PackageController.new(nil, nil)
       ctrl.ui = @ui
-      ctrl.stub(:last_pkg_cache_update).and_return(Time.now - 86500)
+      ctrl.stub(:last_pkg_cache_update).and_return(Time.now - PackageController::ONE_DAY_IN_SECS)
       expect(ctrl).to receive(:update_pkg_cache)
       ctrl.try_update_pkg_cache
     end

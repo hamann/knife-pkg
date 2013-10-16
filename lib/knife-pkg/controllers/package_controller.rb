@@ -21,6 +21,8 @@ module Knife
   module Pkg
     class PackageController
 
+      ONE_DAY_IN_SECS = 86500
+
       attr_accessor :node
       attr_accessor :session
       attr_accessor :options
@@ -95,7 +97,7 @@ module Knife
       end
 
       def try_update_pkg_cache
-        if Time.now - last_pkg_cache_update > 86400 # 24 hours
+        if Time.now - last_pkg_cache_update > (@options[:max_pkg_cache_age] || ONE_DAY_IN_SECS)
           @ui.info("Updating package cache...")
           update_pkg_cache
         end
