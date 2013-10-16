@@ -39,6 +39,7 @@ describe 'AptPackageController' do
       p = AptPackageController.new(nil, nil)
       p.stub(:update_notifier_installed?).and_return(true)
       p.stub(:installed_version).and_return("1.0.0")
+      p.stub(:update_version).and_return("2.0.0")
       expect(p.available_updates).to be_an_instance_of Array
     end
   end
