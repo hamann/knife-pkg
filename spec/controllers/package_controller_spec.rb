@@ -101,4 +101,55 @@ describe 'PackageController' do
       ctrl.try_update_pkg_cache
     end
   end
+
+  describe '.list_available_updates' do
+    it 'should list available updates' do
+      p = Package.new('1'); p2 = Package.new('p2')
+      Chef::Knife::UI.any_instance.stub(:info)
+      PackageController.list_available_updates([p,p2])
+    end
+  end
+
+  describe '.controller_name' do
+    it 'should map platform to controller name' do
+      expect(PackageController.controller_name('debian')).to eq('apt')
+      expect(PackageController.controller_name('ubuntu')).to eq('apt')
+    end
+  end
+
+  describe '.platform_by_local_ohai' do
+    it 'should call ohai to determine the platform type' do
+      r = Struct.new(:stdout)
+      result = r.new("  \"mac_os_x\"")
+      ShellCommand.stub(:exec).and_return(result)
+      expect(ShellCommand).to receive(:exec)
+      expect(PackageController.platform_by_local_ohai(nil, nil)).to eq("mac_os_x")
+    end
+  end
+
+  describe '.update!' do
+    it 'should install available updates' do
+      node = { :platform => 'debian' }
+      packages = ["a","b","c"]
+      package_for_dialog = Package.new("d")
+      available_updates = [ Package.new("a"), Package.new("b"), package_for_dialog ]
+
+      ctrl = PackageController.new(node, nil, {})
+      ctrl.ui = @ui
+      Chef::Knife::UI.any_instance.stub(:info)
+
+      PackageController.stub(:init_controller).with(node, nil, {}).and_return(ctrl)
+      ctrl.stub(:try_update_pkg_cache)
+      ctrl.stub(:available_updates).and_return(available_updates)
+      ctrl.stub(:update_package_verbose!).with([Package.new("a"), Package.new("b")])
+      ctrl.stub(:update_dialog).with([package_for_dialog])
+
+      expect(PackageController).to receive(:init_controller).with(node, nil, {})
+      expect(ctrl).to receive(:try_update_pkg_cache)
+      expect(ctrl).to receive(:available_updates)
+      expect(ctrl).to receive(:update_package_verbose!).exactly(2).times
+      expect(ctrl).to receive(:update_dialog).with([package_for_dialog])
+      PackageController.update!(node, nil, packages, {})
+    end
+  end
 end

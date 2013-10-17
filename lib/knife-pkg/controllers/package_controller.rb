@@ -107,9 +107,7 @@ module Knife
         return if packages.count == 0
 
         ui.info("\tThe following updates are available:") if packages.count > 0
-        update_info(packages).each do |package|
-          ui.info(ui.color("\t" + package.to_s, :yellow))
-        end
+        PackageController::list_available_updates(update_info(packages))
 
         if UserDecision.yes?("\tDo you want to update all packages? [y|n]: ")
           ui.info("\tupdating...")
@@ -133,6 +131,14 @@ module Knife
         end
       end
 
+      # Connects to the node, updates packages (defined with param `packages`) without confirmation, all other available updates with confirmation
+      # @param [Hash] node the node
+      # @option node [String] :platform platform of the node, e.g. `debian`. if not set, `ohai` will be executed
+      # @param [Session] session the ssh session to be used to connect to the node
+      # @param [Array<String>] packages name of the packages which should be updated without confirmation
+      # @param [Hash] opts the options
+      # @option opts [Boolean] :dry_run wether the update should only be simulated (if supported by the package manager)
+      # @option opts [Boolean] :verbose wether the update process should be more verbose
       def self.update!(node, session, packages, opts)
         ctrl = self.init_controller(node, session, opts)
 
@@ -142,6 +148,9 @@ module Knife
         ctrl.try_update_pkg_cache
         available_updates = ctrl.available_updates
 
+        # install packages in auto_updates without confirmation, 
+        # but only if they are available as update 
+        # don't install packages which aren't installed 
         available_updates.each do |avail|
           if auto_updates.select { |p| p.name == avail.name }.count == 0
             updates_for_dialog << avail
