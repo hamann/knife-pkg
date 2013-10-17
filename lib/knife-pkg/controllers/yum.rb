@@ -24,6 +24,10 @@ module Knife
         super(node, session, opts)
       end
 
+      def dry_run_supported?
+        false
+      end
+
       def update_pkg_cache
         # necessary?
       end
@@ -53,7 +57,6 @@ module Knife
       end
 
       def update_package!(package)
-        raise NotImplementedError, "\"dry run\" isn't supported for yum!" if @options[:dry_run]
         cmd_string = "#{sudo}yum -d0 -e0 -y install #{package.name}"
         exec(cmd_string)
       end

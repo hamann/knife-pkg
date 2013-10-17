@@ -14,6 +14,13 @@ describe 'YumPackageController' do
     end
   end
 
+  describe "#dry_run_supported?" do
+    it 'should return false' do
+      p = YumPackageController.new(nil, nil, {})
+      expect(p.dry_run_supported?).to eq false
+    end
+  end
+
   describe "#last_pkg_cache_update" do
     it 'should return a time object' do
       p = YumPackageController.new(nil, nil)
@@ -66,11 +73,6 @@ describe 'YumPackageController' do
   end
 
   describe "#update_package!" do
-    it 'raise an error if dry_run is set' do
-      p = YumPackageController.new(nil, nil, :dry_run => true)
-      expect{p.update_package!(nil)}.to raise_error(NotImplementedError)
-    end
-
     it 'should update a package and return a ShellCommandResult' do
       p = YumPackageController.new(nil, nil)
       r = ShellCommandResult.new(nil,nil, "1\n2\n3", nil)
