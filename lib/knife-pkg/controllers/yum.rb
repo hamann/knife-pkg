@@ -29,11 +29,11 @@ module Knife
       end
 
       def update_pkg_cache
-        # necessary?
+        # not necessary
       end
 
       def last_pkg_cache_update
-        return Time.now # ok?
+        return Time.now 
       end
 
       def installed_version(package)

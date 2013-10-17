@@ -110,7 +110,7 @@ $ knife pkg install updates "roles:webserver" -U "libxml2,gpgv,gnupg"
 
 * apt
 * yum
-* *look at [example](https://github.com/hamann/knife-pkg/blob/master/lib/knife-pkg/controllers/debian.rb) and send PRs*
+* *look at [example](https://github.com/hamann/knife-pkg/blob/master/lib/knife-pkg/controllers/yum.rb) and send PRs*
 
 Which packet manager will be used depends on what `ohai` (or `chef`) reports as [`platform_family`](https://github.com/opscode/ohai/blob/master/lib/ohai/plugins/linux/platform.rb#L103) for a node. So it should work if your node is of type 'debian' (=> apt), 'fedora' or 'rhel' (=> yum)
 
