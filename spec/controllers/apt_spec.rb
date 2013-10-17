@@ -18,9 +18,9 @@ describe 'AptPackageController' do
     it 'should return a time object' do
       t = Time.now
       result = ShellCommandResult.new(nil,"2013-10-07 09:58:34.000000000 +0200\n",nil,nil)
-      ShellCommand.stub(:exec).and_return(result)
 
       p = AptPackageController.new(nil, nil)
+      p.stub(:exec).and_return(result)
       expect(p.last_pkg_cache_update).to be_an_instance_of Time
       expect(p.last_pkg_cache_update).to eq(Time.parse("2013-10-07 09:58:34.000000000 +0200")) 
     end
@@ -35,8 +35,8 @@ describe 'AptPackageController' do
 
     it 'should return an array' do
       result = ShellCommandResult.new(nil, nil, "1\n2\n3", nil)
-      ShellCommand.stub(:exec).and_return(result)
       p = AptPackageController.new(nil, nil)
+      p.stub(:exec).and_return(result)
       p.stub(:update_notifier_installed?).and_return(true)
       p.stub(:installed_version).and_return("1.0.0")
       p.stub(:update_version).and_return("2.0.0")

@@ -25,28 +25,28 @@ module Knife
       end
 
       def update_pkg_cache
-        ShellCommand.exec("#{sudo}apt-get update", @session)
+        exec("#{sudo}apt-get update")
       end
 
       def last_pkg_cache_update
         raise_update_notifier_missing! unless update_notifier_installed?
 
-        result = ShellCommand.exec("stat -c %y /var/lib/apt/periodic/update-success-stamp", @session)
+        result = exec("stat -c %y /var/lib/apt/periodic/update-success-stamp")
         Time.parse(result.stdout.chomp)
       end
 
       def installed_version(package)
-        ShellCommand.exec("dpkg -p #{package.name} | grep -i Version: | awk '{print $2}'", @session).stdout.chomp
+        exec("dpkg -p #{package.name} | grep -i Version: | awk '{print $2}'").stdout.chomp
       end
 
       def update_version(package)
-        ShellCommand.exec("#{sudo} apt-cache policy #{package.name} | grep Candidate | awk '{print $2}'", @session).stdout.chomp
+        exec("#{sudo} apt-cache policy #{package.name} | grep Candidate | awk '{print $2}'").stdout.chomp
       end
 
       def available_updates
         packages = Array.new
         raise_update_notifier_missing! unless update_notifier_installed?
-        result = ShellCommand.exec("#{sudo}/usr/lib/update-notifier/apt_check.py -p", @session)
+        result = exec("#{sudo}/usr/lib/update-notifier/apt_check.py -p")
         result.stderr.split("\n").each do |item|
           package = Package.new(item)
           package.version = update_version(package)
@@ -58,11 +58,11 @@ module Knife
       def update_package!(package)
         cmd_string = "#{sudo} DEBIAN_FRONTEND=noninteractive apt-get install #{package.name} -y -o Dpkg::Options::='--force-confold'"
         cmd_string += " -s" if @options[:dry_run]
-        ShellCommand.exec(cmd_string, @session)
+        exec(cmd_string)
       end
 
       def update_notifier_installed?
-        ShellCommand.exec("dpkg-query -W update-notifier-common 2>/dev/null || echo 'false'", @session).stdout.chomp != 'false'
+        exec("dpkg-query -W update-notifier-common 2>/dev/null || echo 'false'").stdout.chomp != 'false'
       end
 
       def raise_update_notifier_missing!
