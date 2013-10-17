@@ -34,20 +34,73 @@ module Knife
         @options = opts
       end
 
-      def self.ui
-        @ui ||= Chef::Knife::UI.new(STDOUT, STDERR, STDIN, {})
-      end
+      
+      class << self
 
-      def sudo
-        @options[:sudo] ? 'sudo ' : ''
-      end
+        def list_available_updates(updates)
+          updates.each do |update|
+            ui.info(ui.color("\t" + update.to_s, :yellow))
+          end
+        end
 
-      def exec(cmd)
-        ShellCommand.exec(cmd, @session)
-      end
+        def ui
+          @ui ||= Chef::Knife::UI.new(STDOUT, STDERR, STDIN, {})
+        end
 
-      def max_pkg_cache_age
-        options[:max_pkg_cache_age] || ONE_DAY_IN_SECS
+        # Connects to the node, updates packages (defined with param `packages`) without confirmation, all other available updates with confirmation
+        # @param [Hash] node the node
+        # @option node [String] :platform_family platform of the node, e.g. `debian`. if not set, `ohai` will be executed
+        # @param [Session] session the ssh session to be used to connect to the node
+        # @param [Array<String>] packages name of the packages which should be updated without confirmation
+        # @param [Hash] opts the options
+        # @option opts [Boolean] :dry_run whether the update should only be simulated (if supported by the package manager)
+        # @option opts [Boolean] :verbose whether the update process should be more verbose
+        def update!(node, session, packages, opts)
+          ctrl = self.init_controller(node, session, opts)
+
+          auto_updates = packages.map { |u| Package.new(u) }
+          updates_for_dialog = Array.new
+
+          ctrl.try_update_pkg_cache
+          available_updates = ctrl.available_updates
+
+          # install packages in auto_updates without confirmation, 
+          # but only if they are available as update 
+          # don't install packages which aren't installed 
+          available_updates.each do |avail|
+            if auto_updates.select { |p| p.name == avail.name }.count == 0
+              updates_for_dialog << avail
+            else
+              ui.info("\tUpdating #{avail.to_s}")
+              ctrl.update_package_verbose!(avail)
+            end
+          end
+
+          ctrl.update_dialog(updates_for_dialog)
+        end
+
+        def available_updates(node, session, opts = {})
+          ctrl = self.init_controller(node, session, opts)
+          ctrl.try_update_pkg_cache
+          updates = ctrl.available_updates
+          list_available_updates(ctrl.update_info(updates))
+        end
+
+        def init_controller(node, session, opts)
+          platform_family = node[:platform_family] || self.platform_family_by_local_ohai(session, opts)
+          ctrl_name = PlatformFamily.map_to_pkg_ctrl(platform_family)
+          raise NotImplementedError, "I'm sorry, but #{node[:platform_family]} is not supported!" if ctrl_name == 'unknown'
+
+          Chef::Log.debug("Platform Family #{platform_family} detected, using #{ctrl_name}")
+          require File.join(File.dirname(__FILE__), ctrl_name)
+          ctrl = Object.const_get('Knife').const_get('Pkg').const_get("#{ctrl_name.capitalize}PackageController").new(node, session, opts)
+          ctrl.ui = self.ui
+          ctrl
+        end
+
+        def platform_family_by_local_ohai(session, opts)
+          ShellCommand.exec("ohai platform_family| grep \\\"", session).stdout.strip.gsub(/\"/,'')
+        end
       end
 
       ## ++ methods to implement
@@ -91,6 +144,19 @@ module Knife
       end
 
       ## ++ methods to implement
+
+
+      def sudo
+        @options[:sudo] ? 'sudo ' : ''
+      end
+
+      def exec(cmd)
+        ShellCommand.exec(cmd, @session)
+      end
+
+      def max_pkg_cache_age
+        options[:max_pkg_cache_age] || ONE_DAY_IN_SECS
+      end
       
       def update_info(packages)
         result = []
@@ -122,7 +188,7 @@ module Knife
         return if packages.count == 0
 
         ui.info("\tThe following updates are available:") 
-        PackageController::list_available_updates(update_info(packages))
+        self.list_available_updates(update_info(packages))
 
         if UserDecision.yes?("\tDo you want to update all packages? [y|n]: ")
           ui.info("\tupdating...")
@@ -138,67 +204,6 @@ module Knife
             end
           end
         end
-      end
-
-      def self.list_available_updates(updates)
-        updates.each do |update|
-          ui.info(ui.color("\t" + update.to_s, :yellow))
-        end
-      end
-
-      # Connects to the node, updates packages (defined with param `packages`) without confirmation, all other available updates with confirmation
-      # @param [Hash] node the node
-      # @option node [String] :platform_family platform of the node, e.g. `debian`. if not set, `ohai` will be executed
-      # @param [Session] session the ssh session to be used to connect to the node
-      # @param [Array<String>] packages name of the packages which should be updated without confirmation
-      # @param [Hash] opts the options
-      # @option opts [Boolean] :dry_run whether the update should only be simulated (if supported by the package manager)
-      # @option opts [Boolean] :verbose whether the update process should be more verbose
-      def self.update!(node, session, packages, opts)
-        ctrl = self.init_controller(node, session, opts)
-
-        auto_updates = packages.map { |u| Package.new(u) }
-        updates_for_dialog = Array.new
-
-        ctrl.try_update_pkg_cache
-        available_updates = ctrl.available_updates
-
-        # install packages in auto_updates without confirmation, 
-        # but only if they are available as update 
-        # don't install packages which aren't installed 
-        available_updates.each do |avail|
-          if auto_updates.select { |p| p.name == avail.name }.count == 0
-            updates_for_dialog << avail
-          else
-            ui.info("\tUpdating #{avail.to_s}")
-            ctrl.update_package_verbose!(avail)
-          end
-        end
-
-        ctrl.update_dialog(updates_for_dialog)
-      end
-
-      def self.available_updates(node, session, opts = {})
-        ctrl = self.init_controller(node, session, opts)
-        ctrl.try_update_pkg_cache
-        updates = ctrl.available_updates
-        list_available_updates(ctrl.update_info(updates))
-      end
-
-      def self.init_controller(node, session, opts)
-        platform_family = node[:platform_family] || self.platform_family_by_local_ohai(session, opts)
-        ctrl_name = PlatformFamily.map_to_pkg_ctrl(platform_family)
-        raise NotImplementedError, "I'm sorry, but #{node[:platform_family]} is not supported!" if ctrl_name == 'unknown'
-
-        Chef::Log.debug("Platform Family #{platform_family} detected, using #{ctrl_name}")
-        require File.join(File.dirname(__FILE__), ctrl_name)
-        ctrl = Object.const_get('Knife').const_get('Pkg').const_get("#{ctrl_name.capitalize}PackageController").new(node, session, opts)
-        ctrl.ui = self.ui
-        ctrl
-      end
-
-      def self.platform_family_by_local_ohai(session, opts)
-        ShellCommand.exec("ohai platform_family| grep \\\"", session).stdout.strip.gsub(/\"/,'')
       end
     end
   end
