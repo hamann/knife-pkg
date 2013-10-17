@@ -19,6 +19,7 @@ require 'knife-pkg/package'
 require 'knife-pkg/shell_command'
 require 'knife-pkg/shell_command_result'
 require 'knife-pkg/user_decision'
+require 'knife-pkg/platform_family'
 require 'knife-pkg/controllers/package_controller'
 
 module Knife

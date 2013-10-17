@@ -37,13 +37,26 @@ describe 'PackageController' do
   end
 
   describe '.init_controller' do
-    it 'should initialize the right package controller' do
+    it 'should initialize the right package controller if node[:platform_family] is not set' do
       node = Hash.new
-
-      node[:platform] = 'debian'
+      node[:platform_family] = 'debian'
+      expect(PackageController).to_not receive(:platform_family_by_local_ohai)
       ctrl = PackageController.init_controller(node, nil, nil)
       expect(ctrl).to be_an_instance_of AptPackageController
+     end
+
+    it 'should call ohai if node[:platform_family] is not set' do
+      PackageController.stub(:platform_family_by_local_ohai).and_return('debian')
+      expect(PackageController).to receive(:platform_family_by_local_ohai)
+      ctrl = PackageController.init_controller({}, nil, nil)
+      expect(ctrl).to be_an_instance_of AptPackageController
     end
+
+    it 'should raise an error if platform family could not be mapped' do
+      node = { :platform_family => 'suse' }
+      expect{PackageController.init_controller(node, nil, {})}.to raise_error(NotImplementedError)
+    end
+
   end
 
   describe '#update_info' do
@@ -129,26 +142,19 @@ describe 'PackageController' do
     end
   end
 
-  describe '.controller_name' do
-    it 'should map platform to controller name' do
-      expect(PackageController.controller_name('debian')).to eq('apt')
-      expect(PackageController.controller_name('ubuntu')).to eq('apt')
-    end
-  end
-
-  describe '.platform_by_local_ohai' do
-    it 'should call ohai to determine the platform type' do
+  describe '.platform_family_by_local_ohai' do
+    it 'should call ohai to determine the platform family' do
       r = Struct.new(:stdout)
       result = r.new("  \"mac_os_x\"")
       ShellCommand.stub(:exec).and_return(result)
       expect(ShellCommand).to receive(:exec)
-      expect(PackageController.platform_by_local_ohai(nil, nil)).to eq("mac_os_x")
+      expect(PackageController.platform_family_by_local_ohai(nil, nil)).to eq("mac_os_x")
     end
   end
 
   describe '.update!' do
     it 'should install available updates' do
-      node = { :platform => 'debian' }
+      node = { :platform_family => 'debian' }
       packages = ["a","b","c"]
       package_for_dialog = Package.new("d")
       available_updates = [ Package.new("a"), Package.new("b"), package_for_dialog ]

@@ -144,7 +144,7 @@ module Knife
 
       # Connects to the node, updates packages (defined with param `packages`) without confirmation, all other available updates with confirmation
       # @param [Hash] node the node
-      # @option node [String] :platform platform of the node, e.g. `debian`. if not set, `ohai` will be executed
+      # @option node [String] :platform_family platform of the node, e.g. `debian`. if not set, `ohai` will be executed
       # @param [Session] session the ssh session to be used to connect to the node
       # @param [Array<String>] packages name of the packages which should be updated without confirmation
       # @param [Hash] opts the options
@@ -182,36 +182,19 @@ module Knife
       end
 
       def self.init_controller(node, session, opts)
-        begin
-          ctrl_name = ''
-          if node.has_key?(:platform)
-            ctrl_name = self.controller_name(node[:platform])
-          else
-            platform = self.platform_by_local_ohai(session, opts)
-            ctrl_name = self.controller_name(platform)
-          end
-          require File.join(File.dirname(__FILE__), ctrl_name)
-        rescue LoadError
-          raise NotImplementedError, "I'm sorry, but #{node.platform} is not supported!"
-        end
+        platform_family = node[:platform_family] || self.platform_family_by_local_ohai(session, opts)
+        ctrl_name = PlatformFamily.map_to_pkg_ctrl(platform_family)
+        raise NotImplementedError, "I'm sorry, but #{node[:platform_family]} is not supported!" if ctrl_name == 'unknown'
+
+        Chef::Log.debug("Platform Family #{platform_family} detected, using #{ctrl_name}")
+        require File.join(File.dirname(__FILE__), ctrl_name)
         ctrl = Object.const_get('Knife').const_get('Pkg').const_get("#{ctrl_name.capitalize}PackageController").new(node, session, opts)
         ctrl.ui = self.ui
         ctrl
       end
 
-      def self.platform_by_local_ohai(session, opts)
-        ShellCommand.exec("ohai platform| grep \\\"", session).stdout.strip.gsub(/\"/,'')
-      end
-
-      def self.controller_name(platform)
-        case platform
-        when 'debian', 'ubuntu'
-          'apt'
-        when 'centos', 'fedora'
-          'yum'
-        else
-          platform
-        end
+      def self.platform_family_by_local_ohai(session, opts)
+        ShellCommand.exec("ohai platform_family| grep \\\"", session).stdout.strip.gsub(/\"/,'')
       end
     end
   end
