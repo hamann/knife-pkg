@@ -46,6 +46,10 @@ module Knife
         ShellCommand.exec(cmd, @session)
       end
 
+      def max_pkg_cache_age
+        options[:max_pkg_cache_age] || ONE_DAY_IN_SECS
+      end
+
       ## ++ methods to implement
       
       # update the package cache 
@@ -108,7 +112,7 @@ module Knife
       end
 
       def try_update_pkg_cache
-        if Time.now - last_pkg_cache_update > (@options[:max_pkg_cache_age] || ONE_DAY_IN_SECS)
+        if Time.now - last_pkg_cache_update > max_pkg_cache_age 
           @ui.info("Updating package cache...")
           update_pkg_cache
         end

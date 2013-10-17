@@ -35,8 +35,15 @@ module Knife
       def last_pkg_cache_update
         raise_update_notifier_missing! unless update_notifier_installed?
 
-        result = exec("stat -c %y /var/lib/apt/periodic/update-success-stamp")
-        Time.parse(result.stdout.chomp)
+        result = nil
+        begin
+          result = exec("stat -c %y /var/lib/apt/periodic/update-success-stamp")
+          Time.parse(result.stdout.chomp)
+        rescue RuntimeError => e
+          e.backtrace.each { |l| Chef::Log.debug(l) }
+          Chef::Log.warn(e.message)
+          Time.now - (max_pkg_cache_age + 100)
+        end
       end
 
       def installed_version(package)
