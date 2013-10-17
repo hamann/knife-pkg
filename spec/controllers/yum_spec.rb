@@ -26,9 +26,9 @@ describe 'YumPackageController' do
     it 'should return the installed version of a package as string' do
       r = Struct.new(:stdout)
       result = r.new("3.2.29-40.el6.centos\n")
-      ShellCommand.stub(:exec).and_return(result)
 
       p = YumPackageController.new(nil, nil)
+      p.stub(:exec).and_return(result)
       expect(p).to receive(:sudo)
       expect(p.installed_version(Package.new("a"))).to eq("3.2.29-40.el6.centos")
     end
@@ -38,9 +38,9 @@ describe 'YumPackageController' do
     it 'should return the installed version of a package as string' do
       r = Struct.new(:stdout)
       result = r.new("3.2.29-40.el6.centos\n")
-      ShellCommand.stub(:exec).and_return(result)
 
       p = YumPackageController.new(nil, nil)
+      p.stub(:exec).and_return(result)
       expect(p).to receive(:sudo)
       expect(p.update_version(Package.new("a"))).to eq("3.2.29-40.el6.centos")
     end
@@ -50,9 +50,9 @@ describe 'YumPackageController' do
     it 'should return an array of packages' do
       r = Struct.new(:stdout)
       result = r.new("   \nabrt.x86_64 2.0.8-16.el6.centos.1\nabrt-addon-ccpp.x86_64 2.0.8-16.el6.centos.1\n")
-      ShellCommand.stub(:exec).and_return(result)
 
       p = YumPackageController.new(nil, nil)
+      p.stub(:exec).and_return(result)
 
       expect(p).to receive(:sudo)
 
@@ -74,7 +74,7 @@ describe 'YumPackageController' do
     it 'should update a package and return a ShellCommandResult' do
       p = YumPackageController.new(nil, nil)
       r = ShellCommandResult.new(nil,nil, "1\n2\n3", nil)
-      ShellCommand.stub(:exec).and_return(r)
+      p.stub(:exec).and_return(r)
       expect(p.update_package!(Package.new("a"))).to eq(r)
     end
   end
