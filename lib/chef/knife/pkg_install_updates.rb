@@ -101,6 +101,13 @@ class Chef
         :description => "QUERY is a space separated list of servers",
         :default => false
 
+      option :dry_run,
+        :short => "-D",
+        :long => "--dry-run",
+        :boolean => true,
+        :description => "Simulates package installation. Actually this is only supported by 'apt'",
+        :default => false
+
 
       def run
         super

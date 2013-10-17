@@ -107,7 +107,7 @@ module Knife
         result = update_package!(package)
         if @options[:dry_run] || @options[:verbose]
           ui.info(result.stdout)
-          ui.error(result.stderr)
+          ui.error(result.stderr) unless result.stderr.empty?
         end
       end
 
