@@ -42,6 +42,10 @@ module Knife
         @options[:sudo] ? 'sudo ' : ''
       end
 
+      def exec(cmd)
+        ShellCommand.exec(cmd, @session)
+      end
+
       ## ++ methods to implement
       
       # update the package cache 

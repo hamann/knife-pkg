@@ -24,6 +24,18 @@ describe 'PackageController' do
     end
   end
 
+  describe '#exec' do
+    it 'should call ShellCommand and return a ShellCommandResult' do
+      p = PackageController.new(nil, 'a')
+      cmd = "ls -l"
+      r = Struct.new(:stdout, :stderr)
+      result = r.new('a', 'b')
+      ShellCommand.stub(:exec).with(cmd, p.session).and_return(r)
+      expect(ShellCommand).to receive(:exec).with(cmd, p.session)
+      expect(p.exec(cmd)).to eq(r)
+    end
+  end
+
   describe '.init_controller' do
     it 'should initialize the right package controller' do
       node = Hash.new
