@@ -6,7 +6,7 @@ module Knife
           case name
           when 'debian'
             'apt'
-          when 'rhel'
+          when 'rhel', 'fedora'
             'yum'
           else
             'unknown'
