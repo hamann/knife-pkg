@@ -41,13 +41,19 @@ describe 'AptPackageController' do
     end
 
     it 'should return an array' do
-      result = ShellCommandResult.new(nil, nil, "1\n2\n3", nil)
+      result = ShellCommandResult.new(nil, nil, "b\na\nc", nil)
       p = AptPackageController.new(nil, nil)
       p.stub(:exec).and_return(result)
       p.stub(:update_notifier_installed?).and_return(true)
       p.stub(:installed_version).and_return("1.0.0")
       p.stub(:update_version).and_return("2.0.0")
-      expect(p.available_updates).to be_an_instance_of Array
+
+      updates = p.available_updates
+      expect(updates).to be_an_instance_of Array
+      expect(updates.count).to eq(3)
+      expect(updates[0].name).to eq("a")
+      expect(updates[1].name).to eq("b")
+      expect(updates[2].name).to eq("c")
     end
   end
 end

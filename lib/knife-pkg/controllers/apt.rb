@@ -63,7 +63,7 @@ module Knife
           package.version = update_version(package)
           packages << package
         end
-        packages
+        packages.sort { |n,m| n.name <=> m.name }
       end
 
       def update_package!(package)
