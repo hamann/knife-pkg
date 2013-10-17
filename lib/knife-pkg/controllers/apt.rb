@@ -47,7 +47,7 @@ module Knife
       end
 
       def installed_version(package)
-        exec("dpkg -p #{package.name} | grep -i Version: | awk '{print $2}'").stdout.chomp
+        exec("dpkg -p #{package.name} | grep -i Version: | awk '{print $2}' | head -1").stdout.chomp
       end
 
       def update_version(package)
