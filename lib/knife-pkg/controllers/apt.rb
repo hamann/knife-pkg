@@ -24,6 +24,10 @@ module Knife
         super(node, session, opts)
       end
 
+      def dry_run_supported?
+        true
+      end
+
       def update_pkg_cache
         exec("#{sudo}apt-get update")
       end

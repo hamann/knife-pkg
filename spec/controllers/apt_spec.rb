@@ -14,6 +14,13 @@ describe 'AptPackageController' do
     end
   end
 
+  describe '#dry_run_supported?' do
+    it 'should return true' do
+      p = AptPackageController.new(nil, nil, {})
+      expect(p.dry_run_supported?).to eq true
+    end
+  end
+
   describe "#last_pkg_cache_update" do
     it 'should return a time object' do
       t = Time.now

@@ -50,6 +50,11 @@ module Knife
       
       # update the package cache 
       # e.g apt-get update
+
+      def dry_run_supported?
+        false
+      end
+
       def update_pkg_cache
         raise NotImplementedError
       end
@@ -93,6 +98,8 @@ module Knife
       end
 
       def update_package_verbose!(package)
+        raise NotImplementedError, "\"dry run\" isn't supported for this platform! (maybe a bug)" if @options[:dry_run] && !dry_run_supported?
+
         result = update_package!(package)
         if @options[:dry_run] || @options[:verbose]
           ui.info(result.stdout)

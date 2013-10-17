@@ -64,6 +64,11 @@ describe 'PackageController' do
   end
 
   describe '#update_package_verbose!' do
+    it 'should raise an error if dry run is not supported' do
+      ctrl = PackageController.new(nil, nil, :dry_run => true)
+      expect{ctrl.update_package_verbose!([])}.to raise_error(NotImplementedError)
+    end
+
     it 'should not print stdout and stderr dry_run or verbose are not set' do
       ctrl = PackageController.new(nil, {})
       ctrl.ui = @ui
@@ -83,6 +88,7 @@ describe 'PackageController' do
       result = r.new("a", "b")
 
       ctrl.options[:dry_run] = true
+      ctrl.stub(:dry_run_supported?).and_return(true)
       ctrl.stub(:update_package!).and_return(result)
       expect(ctrl.ui).to receive(:info).with("a")
       expect(ctrl.ui).to receive(:error).with("b")
@@ -97,6 +103,7 @@ describe 'PackageController' do
       result = r.new("a", "b")
 
       ctrl.options[:dry_run] = true
+      ctrl.stub(:dry_run_supported?).and_return(true)
       ctrl.stub(:update_package!).and_return(result)
       expect(ctrl.ui).to receive(:info).with("a")
       expect(ctrl.ui).to receive(:error).with("b")
@@ -154,6 +161,7 @@ describe 'PackageController' do
       ctrl.stub(:try_update_pkg_cache)
       ctrl.stub(:available_updates).and_return(available_updates)
       ctrl.stub(:update_package_verbose!).with([Package.new("a"), Package.new("b")])
+      ctrl.stub(:dry_run_supported?).and_return(true)
       ctrl.stub(:update_dialog).with([package_for_dialog])
 
       expect(PackageController).to receive(:init_controller).with(node, nil, {})
