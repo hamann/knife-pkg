@@ -188,7 +188,7 @@ module Knife
         return if packages.count == 0
 
         ui.info("\tThe following updates are available:") 
-        self.list_available_updates(update_info(packages))
+        PackageController.list_available_updates(update_info(packages))
 
         if UserDecision.yes?("\tDo you want to update all packages? [y|n]: ")
           ui.info("\tupdating...")
