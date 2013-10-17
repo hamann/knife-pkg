@@ -207,7 +207,7 @@ module Knife
         case platform
         when 'debian', 'ubuntu'
           'apt'
-        when 'centos'
+        when 'centos', 'fedora'
           'yum'
         else
           platform

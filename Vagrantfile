@@ -1,7 +1,8 @@
 boxes = {
   :debian => { :image => "https://opscode-vm-bento.s3.amazonaws.com/vagrant/opscode_debian-7.1.0_provisionerless.box" },
   :ubuntu => { :image => "https://opscode-vm-bento.s3.amazonaws.com/vagrant/opscode_ubuntu-12.04_provisionerless.box" },
-  :centos => { :image => "https://opscode-vm-bento.s3.amazonaws.com/vagrant/opscode_centos-6.4_provisionerless.box" }
+  :centos => { :image => "https://opscode-vm-bento.s3.amazonaws.com/vagrant/opscode_centos-6.4_provisionerless.box" },
+  :fedora => { :image => "https://opscode-vm-bento.s3.amazonaws.com/vagrant/opscode-fedora-19_provisionerless.box" }
 }
 
 Vagrant::configure("2") do |config|

@@ -105,8 +105,8 @@ Or install it yourself as:
 
 ## Supported Platforms
 
-* Debian/Ubuntu
-* Centos
+* Debian, Ubuntu
+* Centos, Fedora
 * *look at [example](https://github.com/hamann/knife-pkg/blob/master/lib/knife-pkg/controllers/debian.rb) and send PRs*
   
 
