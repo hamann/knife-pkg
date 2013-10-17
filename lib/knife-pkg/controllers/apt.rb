@@ -22,6 +22,7 @@ module Knife
 
       def initialize(node, session, opts = {})
         super(node, session, opts)
+        @installed_packages = Array.new
       end
 
       def dry_run_supported?
@@ -33,11 +34,9 @@ module Knife
       end
 
       def last_pkg_cache_update
-        raise_update_notifier_missing! unless update_notifier_installed?
-
         result = nil
         begin
-          result = exec("stat -c %y /var/lib/apt/periodic/update-success-stamp")
+          result = exec("#{sudo} stat -c %y /var/lib/apt/lists")
           Time.parse(result.stdout.chomp)
         rescue RuntimeError => e
           e.backtrace.each { |l| Chef::Log.debug(l) }
@@ -47,7 +46,14 @@ module Knife
       end
 
       def installed_version(package)
-        exec("dpkg -p #{package.name} | grep -i Version: | awk '{print $2}' | head -1").stdout.chomp
+        package = @installed_packages.select { |p| p.name == package.name }.first || Package.new("")
+        if !package.name.empty?
+          version = package.version
+        else
+          # fallback
+          version = exec("dpkg -p #{package.name} | grep -i Version: | awk '{print $2}' | head -1").stdout.chomp
+        end
+        version
       end
 
       def update_version(package)
@@ -55,29 +61,26 @@ module Knife
       end
 
       def available_updates
-        packages = Array.new
-        raise_update_notifier_missing! unless update_notifier_installed?
-        result = exec("#{sudo}/usr/lib/update-notifier/apt_check.py -p")
-        result.stderr.split("\n").each do |item|
-          package = Package.new(item)
-          package.version = update_version(package)
-          packages << package
+        parse_upgrade(exec("#{sudo} apt-get dist-upgrade -V -s | egrep -v \"^(Conf|Inst)\"").stdout)
+      end
+
+      def parse_upgrade(upgrade_line)
+        result = Array.new
+        rx = Regexp.new(/\s+(?<name>\S+)\s\((?<installed>.+)\s=>\s(?<new>.+)\)/)
+        upgrade_line.split("\n").each do |line|
+          match = rx.match(line)
+          unless match.nil?
+            result << Package.new(match[:name], match[:new])
+            @installed_packages << Package.new(match[:name], match[:installed])
+          end
         end
-        packages.sort { |n,m| n.name <=> m.name }
+        result
       end
 
       def update_package!(package)
         cmd_string = "#{sudo} DEBIAN_FRONTEND=noninteractive apt-get install #{package.name} -y -o Dpkg::Options::='--force-confold'"
         cmd_string += " -s" if @options[:dry_run]
         exec(cmd_string)
-      end
-
-      def update_notifier_installed?
-        exec("dpkg-query -W update-notifier-common 2>/dev/null || echo 'false'").stdout.chomp != 'false'
-      end
-
-      def raise_update_notifier_missing!
-        raise RuntimeError, "No update-notifier(-common) installed!? Install it and try again!"
       end
     end
   end
