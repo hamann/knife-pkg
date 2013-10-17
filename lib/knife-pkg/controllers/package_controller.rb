@@ -121,7 +121,7 @@ module Knife
       def update_dialog(packages)
         return if packages.count == 0
 
-        ui.info("\tThe following updates are available:") if packages.count > 0
+        ui.info("\tThe following updates are available:") 
         PackageController::list_available_updates(update_info(packages))
 
         if UserDecision.yes?("\tDo you want to update all packages? [y|n]: ")
@@ -152,8 +152,8 @@ module Knife
       # @param [Session] session the ssh session to be used to connect to the node
       # @param [Array<String>] packages name of the packages which should be updated without confirmation
       # @param [Hash] opts the options
-      # @option opts [Boolean] :dry_run wether the update should only be simulated (if supported by the package manager)
-      # @option opts [Boolean] :verbose wether the update process should be more verbose
+      # @option opts [Boolean] :dry_run whether the update should only be simulated (if supported by the package manager)
+      # @option opts [Boolean] :verbose whether the update process should be more verbose
       def self.update!(node, session, packages, opts)
         ctrl = self.init_controller(node, session, opts)
 
