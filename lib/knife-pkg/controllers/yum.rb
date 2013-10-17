@@ -33,7 +33,11 @@ module Knife
       end
 
       def installed_version(package)
-        ShellCommand.exec("#{sudo}yum list installed | egrep \"^#{package.name}\" | awk '{print $2}'").chomp
+        ShellCommand.exec("#{sudo}yum list installed | egrep \"^#{package.name}\" | awk '{print $2}'", @session).stdout.chomp
+      end
+
+      def update_version(package)
+        ShellCommand.exec("#{sudo}yum check-update -q | egrep \"^#{package.name}\" | awk '{print $2}'", @session).stdout.chomp
       end
 
       def available_updates
