@@ -36,7 +36,7 @@ describe 'AptPackageController' do
   describe "#available_updates" do
     it 'should return an array' do
       p = AptPackageController.new(nil, nil)
-      result = ShellCommandResult.new(nil,"bla\n base-files2 (7.1wheezy1 => 7.1wheezy2)\nbla",nil,nil)
+      result = ShellCommandResult.new(nil,"will be upgraded\n base-files2 (7.1wheezy1 => 7.1wheezy2)\nbla",nil,nil)
       p.stub(:exec).and_return(result)
       packages = p.available_updates
       expect(packages).to be_an_instance_of Array
@@ -48,7 +48,7 @@ describe 'AptPackageController' do
   describe "#installed_version" do
     it 'should return the installed version from internal list' do
       p = AptPackageController.new(nil, nil)
-      output = "bla\n base-files (7.1wheezy1 => 7.1wheezy2)\nbla"
+      output = "will be upgraded\n base-files (7.1wheezy1 => 7.1wheezy2)\nbla"
       p.parse_upgrade(output)
       expect(p).not_to receive(:exec)
       expect(p.installed_version(Package.new("base-files"))).to eq("7.1wheezy1")
@@ -72,6 +72,9 @@ describe 'AptPackageController' do
       Reading package lists...
       Building dependency tree...
       Reading state information...
+      The following packages have been kept back:
+         esl-erlang (16.b-2~debian~squeeze => 16.b.2-1)
+         postgresql-client-9.2 (9.2.4-1.pgdg60+1 => 9.2.5-1.pgdg60+1)
       The following packages will be upgraded:
          base-files (7.1wheezy1 => 7.1wheezy2)
          curl (7.26.0-1+wheezy3 => 7.26.0-1+wheezy4)

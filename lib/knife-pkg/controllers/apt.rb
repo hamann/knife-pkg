@@ -67,7 +67,12 @@ module Knife
       def parse_upgrade(upgrade_line)
         result = Array.new
         rx = Regexp.new(/\s+(?<name>\S+)\s\((?<installed>.+)\s=>\s(?<new>.+)\)/)
+        found = false
         upgrade_line.split("\n").each do |line|
+          unless found
+            found = true if line.match(/will be upgraded/)
+            next
+          end
           match = rx.match(line)
           unless match.nil?
             result << Package.new(match[:name], match[:new])
