@@ -55,6 +55,7 @@ module Knife
         # @param [Hash] opts the options
         # @option opts [Boolean] :dry_run whether the update should only be simulated (if supported by the package manager)
         # @option opts [Boolean] :verbose whether the update process should be more verbose
+        # @option opts [Boolean] :yes whether all available updates should be installed without confirmation
         def update!(node, session, packages, opts)
           ctrl = self.init_controller(node, session, opts)
 
@@ -63,6 +64,11 @@ module Knife
 
           ctrl.try_update_pkg_cache
           available_updates = ctrl.available_updates
+
+          # install all available packages
+          if opts[:yes]
+            auto_updates = available_updates
+          end
 
           # install packages in auto_updates without confirmation, 
           # but only if they are available as update 
