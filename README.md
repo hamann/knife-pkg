@@ -106,6 +106,31 @@ $ knife pkg install updates "roles:webserver" -U "libxml2,gpgv,gnupg"
 ...
 ```
 
+ - install all updates, don't ask
+
+```sh
+$ knife pkg install updates "*:*" -y
+===> s10.example.com
+	Updating libwbclient0 (3.6.6-6+deb7u1~bpo60+1)
+	Updating samba-common (3.6.6-6+deb7u1~bpo60+1)
+	Updating samba-common-bin (3.6.6-6+deb7u1~bpo60+1)
+	Updating smbclient (3.6.6-6+deb7u1~bpo60+1)
+===> s11.example.com
+	Updating libwbclient0 (3.6.6-6+deb7u1~bpo60+1)
+	Updating samba-common (3.6.6-6+deb7u1~bpo60+1)
+	Updating samba-common-bin (3.6.6-6+deb7u1~bpo60+1)
+	Updating smbclient (3.6.6-6+deb7u1~bpo60+1)
+===> s12.example.com
+	Updating libwbclient0 (3.6.6-6+deb7u1~bpo60+1)
+	Updating samba-common (3.6.6-6+deb7u1~bpo60+1)
+	Updating samba-common-bin (3.6.6-6+deb7u1~bpo60+1)
+===> s13.example.com
+	Updating libwbclient0 (3.6.6-6+deb7u1~bpo60+1)
+	Updating samba-common (3.6.6-6+deb7u1~bpo60+1)
+	Updating samba-common-bin (3.6.6-6+deb7u1~bpo60+1)
+	Updating smbclient (3.6.6-6+deb7u1~bpo60+1)
+```
+
 ## Supported Packet Managers
 
 * apt
