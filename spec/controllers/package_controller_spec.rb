@@ -15,7 +15,7 @@ describe 'PackageController' do
   describe '#sudo' do
     it 'should return sudo prefix' do
       p = PackageController.new(nil, nil, :sudo => true)
-      expect(p.sudo).to eq("sudo ")
+      expect(p.sudo).to eq("sudo -p 'knife sudo password: ' ")
     end
 
     it 'should return no sudo prefix' do
@@ -30,8 +30,8 @@ describe 'PackageController' do
       cmd = "ls -l"
       r = Struct.new(:stdout, :stderr)
       result = r.new('a', 'b')
-      ShellCommand.stub(:exec).with(cmd, p.session).and_return(r)
-      expect(ShellCommand).to receive(:exec).with(cmd, p.session)
+      ShellCommand.stub(:exec).with(cmd, p.session, {}).and_return(r)
+      expect(ShellCommand).to receive(:exec).with(cmd, p.session, {})
       expect(p.exec(cmd)).to eq(r)
     end
   end
