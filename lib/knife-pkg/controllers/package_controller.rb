@@ -153,11 +153,11 @@ module Knife
 
 
       def sudo
-        @options[:sudo] ? 'sudo ' : ''
+        @options[:sudo] ? 'sudo -p \'knife sudo password: \' ' : ''
       end
 
       def exec(cmd)
-        ShellCommand.exec(cmd, @session)
+        ShellCommand.exec(cmd, @session, @options)
       end
 
       def max_pkg_cache_age

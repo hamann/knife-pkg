@@ -18,16 +18,22 @@ module Knife
   module Pkg
     class ShellCommand
 
-      def self.exec(cmd, session)
+      def self.exec(cmd, session, opts = {})
 
         stdout_data, stderr_data = "", ""
         exit_code, exit_signal = nil, nil
         session.open_channel do |channel|
+          channel.request_pty
           channel.exec(cmd) do |_, success|
             raise RuntimeError, "Command \"#{@cmd}\" could not be executed!" if !success
 
             channel.on_data do |_, data|
-              stdout_data += data
+              if data =~ /^knife sudo password: /
+                Chef::Log.debug("sudo password required, sending password")
+                channel.send_data("#{opts[:password]}\n")
+              else
+                stdout_data += data
+              end
             end
 
             channel.on_extended_data do |_,_,data|

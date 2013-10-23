@@ -44,6 +44,7 @@ class Chef
       pkg_options[:verbose] = config[:verbose] || config[:dry_run] || config[:pkg_verbose]
       pkg_options[:dry_run] = config[:dry_run]
       pkg_options[:yes] = config[:yes]
+      pkg_options[:password] = config[:ssh_password]
       pkg_options
     end
 
