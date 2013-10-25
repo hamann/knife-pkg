@@ -151,13 +151,20 @@ module Knife
 
       ## ++ methods to implement
 
-
       def sudo
         @options[:sudo] ? 'sudo -p \'knife sudo password: \' ' : ''
       end
 
+      def get_password
+        @@password ||= prompt_for_password
+      end
+
+      def prompt_for_password(prompt = "Enter your password: ")
+        @ui.ask(prompt) { |q| q.echo = false }
+      end
+
       def exec(cmd)
-        ShellCommand.exec(cmd, @session, @options)
+        ShellCommand.exec(cmd, @session, get_password)
       end
 
       def max_pkg_cache_age

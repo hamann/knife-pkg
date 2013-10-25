@@ -27,12 +27,24 @@ describe 'PackageController' do
   describe '#exec' do
     it 'should call ShellCommand and return a ShellCommandResult' do
       p = PackageController.new(nil, 'a')
+      p.ui = @ui
       cmd = "ls -l"
       r = Struct.new(:stdout, :stderr)
       result = r.new('a', 'b')
-      ShellCommand.stub(:exec).with(cmd, p.session, {}).and_return(r)
-      expect(ShellCommand).to receive(:exec).with(cmd, p.session, {})
+      p.stub(:get_password).and_return('test')
+      ShellCommand.stub(:exec).with(cmd, p.session, p.get_password).and_return(r)
+      expect(ShellCommand).to receive(:exec).with(cmd, p.session, p.get_password)
       expect(p.exec(cmd)).to eq(r)
+    end
+  end
+
+  describe '#get_password' do
+    it 'should prompt for password only the first time' do
+      p = PackageController.new(nil, 'a')
+      p.ui = @ui
+      p.ui.stub(:ask).and_return('test')
+      expect(p).to receive(:prompt_for_password).exactly(1).times
+      p.get_password
     end
   end
 
