@@ -29,7 +29,11 @@ module Knife
             channel.on_data do |_, data|
               if data =~ /^knife sudo password: /
                 Chef::Log.debug("sudo password required, sending password")
-                channel.send_data(password + "\n")
+                if password.respond_to?(:call)
+                  channel.send_data(password.call + "\n")
+                else
+                  channel.send_data(password + "\n")
+                end
               else
                 stdout_data += data
               end

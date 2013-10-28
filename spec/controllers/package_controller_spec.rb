@@ -32,8 +32,8 @@ describe 'PackageController' do
       r = Struct.new(:stdout, :stderr)
       result = r.new('a', 'b')
       p.stub(:get_password).and_return('test')
-      ShellCommand.stub(:exec).with(cmd, p.session, p.get_password).and_return(r)
-      expect(ShellCommand).to receive(:exec).with(cmd, p.session, p.get_password)
+      ShellCommand.stub(:exec).and_return(r)
+      expect(ShellCommand).to receive(:exec)
       expect(p.exec(cmd)).to eq(r)
     end
   end

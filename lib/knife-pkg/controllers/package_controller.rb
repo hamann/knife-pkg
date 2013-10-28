@@ -164,7 +164,7 @@ module Knife
       end
 
       def exec(cmd)
-        ShellCommand.exec(cmd, @session, get_password)
+        ShellCommand.exec(cmd, @session, method(:get_password))
       end
 
       def max_pkg_cache_age
